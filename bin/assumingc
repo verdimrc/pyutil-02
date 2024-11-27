@@ -21,6 +21,10 @@
 #     └── personal              # Profile of an individual account "personal"
 #         └── .ngc
 #             └── config
+#
+# Pro tip: make your prompt to show the active NGC profile on your prompt.
+#          See https://github.com/verdimrc/linuxcfg/tree/main/.zshrc and
+#          search for 'ngc_profile'.
 
 declare -a HELP=(
     "-v|--verbose"
