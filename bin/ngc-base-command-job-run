@@ -1,0 +1,76 @@
+#!/bin/bash
+
+################################################################################
+# Fancy `ngc base-command job run`: submit a cli job that opens a shell, then
+# to display additional informations to the output of the ngc command.
+#
+#     $ ngc-base-command-job-run <USUAL_ARGS_OF_NGC_BASE_COMMAND_JOB_RUN>
+#     ... <original output> ...
+#
+#     https://<JOB_URL>
+#     ngc base-command job info <JOB_ID>
+#     ngc base-command job exec <JOB_ID>
+################################################################################
+
+
+# Submit a cli job (open a shell).
+ngc-base-command-job-run() {
+    # https://tldp.org/LDP/abs/html/localvar.html
+    local out
+    local subshell_errno
+    out="$(ngc base-command job run $@ --commandline 'sleep infinity' 2>&1)"
+    subshell_errno=$?
+    echo "${out}"
+
+    [[ $subshell_errno == 0 ]] || return $subshell_errno
+    local job_id=$(echo "$out" | grep 'Id: ' -m 1 | awk '{print $2}')
+
+    if [[ $job_id != "" ]]; then
+        # Usually when --help
+        echo "
+https://bc.ngc.nvidia.com/jobs/$job_id
+ngc base-command job info $job_id
+ngc base-command job exec $job_id
+"
+    fi
+}
+
+ngc-base-command-job-run "$@"
+
+
+## Unit-test parser.
+# test_job_submit_output='
+# ----------------------------------------------------------
+#  Job Information
+#    Id: 7180359
+#    Name: nemo-2.0-import-ckpt-cli
+#    Number of Replicas: 1
+#    Job Type: BATCH
+#    Submitted By: Verdi March
+#    Order: 50
+#    Priority: NORMAL
+#  Job Container Information
+#    Docker Image URL: nvidia/nemo:24.09
+#  Job Commands
+#    Command: sleep inifinity
+#  Datasets, Workspaces and Results
+#      Workspace ID: XmTW0MBiTjSOwfRGyJCjpw
+#        Workspace Name: vmarch-haha
+#        Workspace Mount Point: /root/.cache
+#        Workspace Mount Mode: RW
+#      Result Mount Point: /result
+#  Job Resources
+#    Instance Type: dgxa100.80g.1.norm
+#    Instance Details: 1 GPU, 11.0 CPU, 128 GB System Memory
+#    ACE: sa-nvex-scus-ace
+#    Team: customer-demos
+#  Job Labels
+#    Locked: False
+#  Job Status
+#    Created at: 2024-11-25 07:59:10 UTC
+#    Status: CREATED
+#    Preempt Class: RUNONCE
+#    Total Runtime: 02H00M00S
+#    Minimum Timeslice: 02H00M00S
+# ----------------------------------------------------------'
+# echo "$test_job_submit_output" | grep 'Id: ' -m 1 | awk '{print $2}'
