@@ -7,8 +7,6 @@
 #     . assumingc <PROFILE_NAME>
 #     . assumingc -u
 #
-# NOTE: shebang is just for documentation + syntax highlighting.
-#
 # Require this structure:
 #
 #     $HOME/.ngc
